@@ -163,8 +163,8 @@ public class SudokuBoardView extends View {
             }
         }
 
-        if(number == -2){         // for clear button case
-            get_y = 0; get_x = 0;number = -1;
+        if(number == -2 && 9*i+j > 0){         // for clear button case
+            get_y = 0; get_x = 0;num_set[9 * i + j] = -1;number = -1;
         }
 
 

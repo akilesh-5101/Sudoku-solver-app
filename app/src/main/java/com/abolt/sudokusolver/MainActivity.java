@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private Button solve;
     private int a;
     private SudokuBoardView sudoku;
-    private int[][] fin_set;
+    private int[] fin_set;
     private float dim;
 
     @Override
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-        fin_set = new int[9][9];
+        fin_set = new int[81];
 
         if(width < height){
             dim = width;
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
                 PyObject obj = null;
                  obj = pyObj.callAttr("main", sudoku.num_set);
-                 fin_set = obj.toJava(int[][].class);
+                 sudoku.num_set = obj.toJava(int[].class);
                 sudoku.postInvalidate();
             }
         });
