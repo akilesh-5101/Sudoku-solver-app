@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sudoku.number=-2;sudoku.postInvalidate();
+                sudoku.number=-2 ;sudoku.postInvalidate();
             }
         });
         solve.setOnClickListener(new View.OnClickListener() {

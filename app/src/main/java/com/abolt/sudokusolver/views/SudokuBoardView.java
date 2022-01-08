@@ -22,13 +22,14 @@ public class SudokuBoardView extends View {
     private Paint sudoku_paint;
     private Paint number_paint;
     private Paint highlighter;
+    private Paint error;
     private int dimension;
     private float cellLines;
-    private float get_x;
-    private float get_y;
+    public float get_x;
+    public float get_y;
     public int number;
     private int temp;
-    public int[][] num_set;
+    public int[] num_set;
     private int check;
     private int highlight;
     public int done;
@@ -59,6 +60,8 @@ public class SudokuBoardView extends View {
         sudoku_Rect = new RectF();
         number_paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         highlighter = new Paint(Paint.ANTI_ALIAS_FLAG);
+        error = new Paint((Paint.ANTI_ALIAS_FLAG));
+        error.setColor(Color.RED);
         highlighter.setColor(Color.rgb(255,255,102));
         sudoku_paint.setColor(Color.rgb(23,4,66));
         number_paint.setColor(Color.BLACK);
@@ -69,10 +72,10 @@ public class SudokuBoardView extends View {
         temp = 0;
         highlight = 0;
         check = 0;
-        num_set = new int[81][2];
+        num_set = new int[81];
         for(int i =0; i< 81; i++){
             for(int j = 0; j<2 ; j++){
-                num_set[i][j] = -1;
+                num_set[i] = -1;
             }
         }
     }
@@ -102,6 +105,7 @@ public class SudokuBoardView extends View {
 
         drawSudokuSquare(canvas);
         drawNumbers(canvas);
+
     }
 
     private void drawBorder() {
@@ -145,51 +149,56 @@ public class SudokuBoardView extends View {
 
     }
 
-    private void assignNumbers() {
-        int i = 0, j = 0, k = 0;
+    private int assignNumbers() {
+        int i = 0, j = 0,m,n,p;
 
-        for (i = 9; i >= 0; i--) {
+        for (i = 8; i >= 0; i--) {
             if (get_x > cellLines * i) {
                 break;
             }
         }
-        for (j = 9; j >= 0; j--) {
+        for (j = 8; j >= 0; j--) {
             if (get_y > cellLines * j) {
                 break;
             }
         }
-        
-        for(k = 0; k<81; k++ ){
-            if(num_set[k][1] == 10*i + j){ // case when a number is present in highlighted box
-                check = 1;
-                if(number != -1) {
-                    num_set[k][0] = number;
-                }
-                if(number == -2){
-                    num_set[k][0] = -1;
-                }
-                break;
+
+        if(number == -2){         // for clear button case
+            get_y = 0; get_x = 0;number = -1;
+        }
+
+
+        if(number != -1 && 9*i+j >= 0){
+            m = box_check(i,j);
+            if(m != -1){
+                return (m);
             }
+            n = row_check(i,j);
+            if(n != -1){
+                return (n);
+            }
+            p = col_check(i,j);
+            if(p != -1){
+                return (p);
+            }
+
+            num_set[9 * i + j] = number;
+
         }
-        if(check == 0) {  // case when highlighted box is empty
-                if (number != -1) {
-                    num_set[temp][0] = number;
-                    num_set[temp][1] = 10 * i + j;
-                    temp++;
-                }
-        }
-        //Log.d("Please", "" + (10*i + j));
-        check = 0;
+        return -1;
     }
 
     private void drawNumbers(Canvas canvas){
-        int x = 0, y = 0;
-        assignNumbers();
+        int x = 0, y = 0, res;
+        res = assignNumbers();
+        if(res != -1){
+            canvas.drawRect(cellLines*(res/9), cellLines*(res%9), cellLines*(res/9 + 1), cellLines*((res%9)+ 1), error );
+        }
         number_paint.setTextSize(5*cellLines/7);
         for(int i = 0; i<81; i++){
-            if(num_set[i][0] != -1 && num_set[i][0] != -2){
-                x = num_set[i][1]/10; y = num_set[i][1]%10;
-                canvas.drawText("" + num_set[i][0], cellLines * x + (9 * cellLines / 20) - cellLines / 6,
+            if(num_set[i]!= -1 && num_set[i]!= -2){
+                x = i/9; y = i%9;
+                canvas.drawText("" + num_set[i], cellLines * x + (9 * cellLines / 20) - cellLines / 6,
                         cellLines * y + (9 * cellLines / 20) + cellLines / 3, number_paint);
             }
         }
@@ -288,5 +297,113 @@ public class SudokuBoardView extends View {
         c.drawRect(sudoku_Rect, highlighter);
         highlight = 0;
     }
+    private int row_check(int i, int j){
+        int n =0;
+        for(n = 0; n < 9; n++){
+            if(num_set[9*n+j] == number){
+                return 9*n+j;
+            }
+        }
+        return -1;
+    }
 
+    private int col_check(int i, int j){
+        int n =0;
+        for(n = 0; n < 9; n++){
+            if(num_set[9*i+n] == number){
+                return 9*i + n;
+            }
+        }
+        return -1;
+    }
+
+    private int box_check(int i, int j){
+        int n =0, m= 0;
+        if(i < 3 && j < 3){
+            for(m=0;m<3;m++){
+                for(n=0;n<3;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 6 && j < 3){
+            for(m=3;m<6;m++){
+                for(n=0;n<3;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 9 && j < 3){
+            for(m=6;m<9;m++){
+                for(n=0;n<3;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 3 && j < 6){
+            for(m=0;m<3;m++){
+                for(n=3;n<6;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 6 && j < 6){
+            for(m=3;m<6;m++){
+                for(n=3;n<6;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 9 && j < 6){
+            for(m=6;m<9;m++){
+                for(n=3;n<6;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 3 && j < 9){
+            for(m=0;m<3;m++){
+                for(n=6;n<9;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 6 && j < 9){
+            for(m=3;m<6;m++){
+                for(n=6;n<9;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        else if(i < 9 && j < 9){
+            for(m=6;m<9;m++){
+                for(n=6;n<9;n++) {
+                    if (num_set[9*m+n] == number){
+                        return 9*m+n;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    private void error_highlight(int i, int j){
+
+    }
 }
